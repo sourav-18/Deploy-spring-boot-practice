@@ -15,7 +15,7 @@ public class BasicController {
         String host = InetAddress.getLocalHost().getHostName();
         long pid=ProcessHandle.current().pid();
         String instance = System.getenv("INSTANCE_NAME");
-        return "instance: "+ instance+" basic work Pid: "+pid+" hostX: "+host;
+        return "instance: "+ instance+" basic work Pid: "+pid+" host: "+host;
     }
 }
 
