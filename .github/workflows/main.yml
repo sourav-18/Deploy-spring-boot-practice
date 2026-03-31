@@ -2,14 +2,14 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: ["basic"]
+    branches: ["main"]
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Login to Docker Hub
@@ -19,3 +19,26 @@ jobs:
         run: |
           docker build -t souravdas18/my-app .
           docker push souravdas18/my-app
+
+      - name: Deploy to VM (Run 2 Instances)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Stopping old containers..."
+            docker stop app1 app2 || true
+
+            echo "Removing old containers..."
+            docker rm app1 app2 || true
+
+            echo "Pulling latest image..."
+            docker pull souravdas18/my-app
+
+            echo "Starting new containers..."
+
+            docker run -d -p 8081:8080 --name app1 -e INSTANCE_NAME=app1 souravdas18/my-app
+            docker run -d -p 8082:8080 --name app2 -e INSTANCE_NAME=app2 souravdas18/my-app
+
+            echo "Deployment completed!"
